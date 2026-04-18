@@ -1423,7 +1423,7 @@ import { BatchCard } from "./BatchCard";
 
 interface BatchGridProps {
   batches:   WasteBatch[];
-  metaMap:   Map<number, BatchMetadata>;
+  metaMap:   Map<bigint, BatchMetadata>;
 }
 
 export function BatchGrid({ batches, metaMap }: BatchGridProps) {
@@ -1443,7 +1443,7 @@ export function BatchGrid({ batches, metaMap }: BatchGridProps) {
         <BatchCard
           key={String(batch.id)}
           batch={batch}
-          metadata={metaMap.get(Number(batch.id)) ?? null}
+          metadata={metaMap.get(batch.id) ?? null}
         />
       ))}
     </div>
@@ -1686,7 +1686,7 @@ export function ListWasteForm() {
       });
 
       await createBatchMetadata({
-        batch_id:       Number(batchId),
+        batch_id:       batchId,
         description,
         photo_url:      null,
         location_label: locationLabel,
@@ -2000,7 +2000,7 @@ import { WalletConnect } from "@/components/marketplace/WalletConnect";
 
 export default function MarketplacePage() {
   const { data: batches, isLoading } = useAllBatches();
-  const [metaMap, setMetaMap] = useState<Map<number, BatchMetadata>>(new Map());
+  const [metaMap, setMetaMap] = useState<Map<bigint, BatchMetadata>>(new Map());
 
   // Fetch Supabase metadata whenever the batch list changes
   useEffect(() => {
@@ -2184,7 +2184,7 @@ export default function BatchDetailPage({
   const [metadata, setMetadata] = useState<BatchMetadata | null>(null);
 
   useEffect(() => {
-    getBatchMetadata(Number(batchId)).then(setMetadata);
+    getBatchMetadata(batchId).then(setMetadata);
   }, [batchId]);
 
   if (isLoading) {

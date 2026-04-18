@@ -38,7 +38,8 @@ export async function getBatchMetadata(
     if (error.code === 'PGRST116') return null; // row not found
     throw new Error(error.message);
   }
-  return data as BatchMetadata;
+  const raw = data as { batch_id: string; user_id: string | null; description: string; photo_url: string | null; location_label: string; created_at: string };
+  return { ...raw, batch_id: BigInt(raw.batch_id) };
 }
 
 export async function listBatchesMetadata(
@@ -50,5 +51,6 @@ export async function listBatchesMetadata(
     .select("*")
     .in("batch_id", ids);
   if (error) throw new Error(error.message);
-  return (data ?? []) as BatchMetadata[];
+  const raw = (data ?? []) as Array<{ batch_id: string; user_id: string | null; description: string; photo_url: string | null; location_label: string; created_at: string }>;
+  return raw.map((r) => ({ ...r, batch_id: BigInt(r.batch_id) }));
 }
