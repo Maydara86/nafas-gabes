@@ -57,6 +57,8 @@ contract WasteMarketplaceTest is Test {
         marketplace.listWaste("phosphogypsum", 1000, 3, "33.9312,10.1178");
 
         vm.prank(claimer);
+        vm.expectEmit(true, true, false, false);
+        emit WasteMarketplace.BatchClaimed(1, claimer);
         marketplace.claimWaste(1);
 
         WasteMarketplace.WasteBatch memory batch = marketplace.getBatch(1);
@@ -101,6 +103,8 @@ contract WasteMarketplaceTest is Test {
         marketplace.confirmCollection(1);
 
         vm.prank(factory);
+        vm.expectEmit(true, false, false, false);
+        emit WasteMarketplace.BatchCollected(1);
         marketplace.confirmCollection(1);
         assertEq(
             uint8(marketplace.getBatch(1).status),
@@ -130,6 +134,8 @@ contract WasteMarketplaceTest is Test {
         marketplace.markProcessed(1, "algae");
 
         vm.prank(claimer);
+        vm.expectEmit(true, false, false, true);
+        emit WasteMarketplace.BatchProcessed(1, "algae");
         marketplace.markProcessed(1, "algae");
 
         WasteMarketplace.WasteBatch memory batch = marketplace.getBatch(1);
