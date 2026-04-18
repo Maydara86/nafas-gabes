@@ -6,7 +6,7 @@ const supabase = createClient(
 );
 
 export interface BatchMetadata {
-  batch_id:       number;
+  batch_id:       bigint;
   user_id:        string | null;
   description:    string;
   photo_url:      string | null;
@@ -15,7 +15,7 @@ export interface BatchMetadata {
 }
 
 export async function createBatchMetadata(data: {
-  batch_id:       number;
+  batch_id:       bigint;
   description:    string;
   photo_url:      string | null;
   location_label: string;
@@ -27,25 +27,28 @@ export async function createBatchMetadata(data: {
 }
 
 export async function getBatchMetadata(
-  batchId: number,
+  batchId: bigint,
 ): Promise<BatchMetadata | null> {
   const { data, error } = await supabase
     .from("waste_batch_metadata")
     .select("*")
     .eq("batch_id", batchId)
     .single();
-  if (error) return null;
+  if (error) {
+    if (error.code === 'PGRST116') return null; // row not found
+    throw new Error(error.message);
+  }
   return data as BatchMetadata;
 }
 
 export async function listBatchesMetadata(
-  ids: number[],
+  ids: bigint[],
 ): Promise<BatchMetadata[]> {
   if (ids.length === 0) return [];
   const { data, error } = await supabase
     .from("waste_batch_metadata")
     .select("*")
     .in("batch_id", ids);
-  if (error) return [];
+  if (error) throw new Error(error.message);
   return (data ?? []) as BatchMetadata[];
 }

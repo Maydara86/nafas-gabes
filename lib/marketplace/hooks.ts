@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import {
   useReadContract,
   useWriteContract,
@@ -158,37 +158,53 @@ export type MarketplaceEvent =
   | { type: "processed"; id: bigint; outputType: string; timestamp: number };
 
 export function useMarketplaceEvents(onEvent: (e: MarketplaceEvent) => void) {
+  // Stable ref so inline handlers don't change identity on re-render
+  const cbRef = useRef(onEvent);
+  useEffect(() => { cbRef.current = onEvent; });
+
+  const onListed = useCallback((logs: unknown[]) => {
+    (logs as Array<{ args: { id: bigint; factory: `0x${string}`; wasteType: string; quantity: bigint } }>)
+      .forEach((l) => cbRef.current({ type: "listed", ...l.args, timestamp: Date.now() } as MarketplaceEvent));
+  }, []);
+
+  const onClaimed = useCallback((logs: unknown[]) => {
+    (logs as Array<{ args: { id: bigint; claimer: `0x${string}` } }>)
+      .forEach((l) => cbRef.current({ type: "claimed", ...l.args, timestamp: Date.now() } as MarketplaceEvent));
+  }, []);
+
+  const onCollected = useCallback((logs: unknown[]) => {
+    (logs as Array<{ args: { id: bigint } }>)
+      .forEach((l) => cbRef.current({ type: "collected", ...l.args, timestamp: Date.now() } as MarketplaceEvent));
+  }, []);
+
+  const onProcessed = useCallback((logs: unknown[]) => {
+    (logs as Array<{ args: { id: bigint; outputType: string } }>)
+      .forEach((l) => cbRef.current({ type: "processed", ...l.args, timestamp: Date.now() } as MarketplaceEvent));
+  }, []);
+
   useWatchContractEvent({
     address: WASTE_MARKETPLACE_ADDRESS,
     abi: WASTE_MARKETPLACE_ABI,
     eventName: "BatchListed",
-    onLogs: (logs) => logs.forEach((l) =>
-      onEvent({ type: "listed", ...l.args, timestamp: Date.now() } as MarketplaceEvent)
-    ),
+    onLogs: onListed,
   });
   useWatchContractEvent({
     address: WASTE_MARKETPLACE_ADDRESS,
     abi: WASTE_MARKETPLACE_ABI,
     eventName: "BatchClaimed",
-    onLogs: (logs) => logs.forEach((l) =>
-      onEvent({ type: "claimed", ...l.args, timestamp: Date.now() } as MarketplaceEvent)
-    ),
+    onLogs: onClaimed,
   });
   useWatchContractEvent({
     address: WASTE_MARKETPLACE_ADDRESS,
     abi: WASTE_MARKETPLACE_ABI,
     eventName: "BatchCollected",
-    onLogs: (logs) => logs.forEach((l) =>
-      onEvent({ type: "collected", ...l.args, timestamp: Date.now() } as MarketplaceEvent)
-    ),
+    onLogs: onCollected,
   });
   useWatchContractEvent({
     address: WASTE_MARKETPLACE_ADDRESS,
     abi: WASTE_MARKETPLACE_ABI,
     eventName: "BatchProcessed",
-    onLogs: (logs) => logs.forEach((l) =>
-      onEvent({ type: "processed", ...l.args, timestamp: Date.now() } as MarketplaceEvent)
-    ),
+    onLogs: onProcessed,
   });
 }
 
