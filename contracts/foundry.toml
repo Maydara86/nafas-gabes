@@ -1,3 +1,6 @@
+# SETUP: Run `forge install foundry-rs/forge-std --no-git --root .` on fresh clone
+# See README.md for details
+
 [profile.default]
 src = "src"
 out = "out"
