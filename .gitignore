@@ -44,6 +44,11 @@ prod.log
 # claude code local state
 .claude/
 
+# foundry
+contracts/out/
+contracts/cache/
+contracts/lib/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
