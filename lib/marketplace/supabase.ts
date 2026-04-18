@@ -22,7 +22,7 @@ export async function createBatchMetadata(data: {
 }): Promise<void> {
   const { error } = await supabase
     .from("waste_batch_metadata")
-    .insert(data);
+    .insert({ ...data, batch_id: String(data.batch_id) });
   if (error) throw new Error(error.message);
 }
 
@@ -32,7 +32,7 @@ export async function getBatchMetadata(
   const { data, error } = await supabase
     .from("waste_batch_metadata")
     .select("*")
-    .eq("batch_id", batchId)
+    .eq("batch_id", String(batchId))
     .single();
   if (error) {
     if (error.code === 'PGRST116') return null; // row not found
@@ -49,7 +49,7 @@ export async function listBatchesMetadata(
   const { data, error } = await supabase
     .from("waste_batch_metadata")
     .select("*")
-    .in("batch_id", ids);
+    .in("batch_id", ids.map(String));
   if (error) throw new Error(error.message);
   const raw = (data ?? []) as Array<{ batch_id: string; user_id: string | null; description: string; photo_url: string | null; location_label: string; created_at: string }>;
   return raw.map((r) => ({ ...r, batch_id: BigInt(r.batch_id) }));
