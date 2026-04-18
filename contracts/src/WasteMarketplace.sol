@@ -88,9 +88,12 @@ contract WasteMarketplace {
     }
 
     function getBatch(uint256 id) external view returns (WasteBatch memory) {
+        require(id >= 1 && id <= batchCount, "Batch does not exist");
         return batches[id];
     }
 
+    // NOTE: unbounded loop — acceptable at demo scale (~20 batches) but will hit gas limits
+    // at scale. For production, replace with pagination or an indexed event approach.
     function getAllBatches() external view returns (WasteBatch[] memory) {
         WasteBatch[] memory result = new WasteBatch[](batchCount);
         for (uint256 i = 1; i <= batchCount; i++) {
