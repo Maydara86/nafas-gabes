@@ -56,6 +56,7 @@ export default function BatchDetailPage({
 
   // Determine which action to show
   function renderAction() {
+    if (!batch) return null;
     if (!isConnected) {
       return (
         <div className="tac-panel px-4 py-4 space-y-3 text-center">
